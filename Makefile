@@ -147,7 +147,7 @@ $(OBJDIR)%.o: %.c $(DEPS)
 
 # Teste
 %.o:%.c
-        $(CC) $(COMMON) $(CFLAGS) -c $< -o $@
+	$(CC) $(COMMON) $(CFLAGS) -c $< -o $@
 #    gcc $(CFLAGS) $< -o $@
 
 $(OBJDIR)%.o: %.cpp $(DEPS)
