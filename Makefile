@@ -145,6 +145,11 @@ $(EXEC): $(OBJS)
 $(OBJDIR)%.o: %.c $(DEPS)
 	$(CC) $(COMMON) $(CFLAGS) -c $< -o $@
 
+# Teste
+%.o:%.c
+        $(CC) $(COMMON) $(CFLAGS) -c $< -o $@
+#    gcc $(CFLAGS) $< -o $@
+
 $(OBJDIR)%.o: %.cpp $(DEPS)
 	$(CPP) -std=c++11 $(COMMON) $(CFLAGS) -c $< -o $@
 
