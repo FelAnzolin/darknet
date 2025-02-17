@@ -74,10 +74,15 @@ endif
 CFLAGS+=$(OPTS)
 
 ifeq ($(OPENCV), 1)
-COMMON+= -DOPENCV
-CFLAGS+= -DOPENCV
-LDFLAGS+= `pkg-config --libs opencv4`
-COMMON+= `pkg-config --cflags opencv4`
+# COMMON+= -DOPENCV
+# CFLAGS+= -DOPENCV
+# LDFLAGS+= `pkg-config --libs opencv4`
+# COMMON+= `pkg-config --cflags opencv4`
+OPENCV_CFLAGS ?= `pkg-config --cflags opencv4 2> /dev/null || pkg-config --cflags opencv`
+OPENCV_LIBS ?= `pkg-config --libs opencv4 2> /dev/null || pkg-config --libs opencv`
+COMMON += -DOPENCV $(OPENCV_CFLAGS)
+CFLAGS += $(COMMON)
+LDFLAGS += $(COMMON) $(OPENCV_LIBS)
 endif
 
 ifeq ($(OPENMP), 1)
