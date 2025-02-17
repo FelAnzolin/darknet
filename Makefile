@@ -74,20 +74,10 @@ endif
 CFLAGS+=$(OPTS)
 
 ifeq ($(OPENCV), 1)
-# COMMON+= -DOPENCV
-# CFLAGS+= -DOPENCV
-# LDFLAGS+= `pkg-config --libs opencv4`
-# COMMON+= `pkg-config --cflags opencv4`
-# OPENCV_CFLAGS ?= `pkg-config --cflags opencv4 2> /dev/null || pkg-config --cflags opencv`
-# OPENCV_LIBS ?= `pkg-config --libs opencv4 2> /dev/null || pkg-config --libs opencv`
-# COMMON += -DOPENCV $(OPENCV_CFLAGS)
-# CFLAGS += $(COMMON)
-# LDFLAGS += $(COMMON) $(OPENCV_LIBS)
-OPENCV_CFLAGS = -I/usr/include/opencv4 
-OPENCV_LIBS = -lopencv_stitching -lopencv_alphamat -lopencv_aruco -lopencv_barcode -lopencv_bgsegm -lopencv_bioinspired -lopencv_ccalib -lopencv_dnn_objdetect -lopencv_dnn_superres -lopencv_dpm -lopencv_face -lopencv_freetype -lopencv_fuzzy -lopencv_hdf -lopencv_hfs -lopencv_img_hash -lopencv_intensity_transform -lopencv_line_descriptor -lopencv_mcc -lopencv_quality -lopencv_rapid -lopencv_reg -lopencv_rgbd -lopencv_saliency -lopencv_shape -lopencv_stereo -lopencv_structured_light -lopencv_phase_unwrapping -lopencv_superres -lopencv_optflow -lopencv_surface_matching -lopencv_tracking -lopencv_highgui -lopencv_datasets -lopencv_text -lopencv_plot -lopencv_ml -lopencv_videostab -lopencv_videoio -lopencv_viz -lopencv_wechat_qrcode -lopencv_ximgproc -lopencv_video -lopencv_xobjdetect -lopencv_objdetect -lopencv_calib3d -lopencv_imgcodecs -lopencv_features2d -lopencv_dnn -lopencv_flann -lopencv_xphoto -lopencv_photo -lopencv_imgproc -lopencv_core
-COMMON += -DOPENCV $(OPENCV_CFLAGS)
-CFLAGS += $(COMMON)
-LDFLAGS += $(COMMON) $(OPENCV_LIBS)
+COMMON+= -DOPENCV
+CFLAGS+= -DOPENCV
+LDFLAGS+= `pkg-config --libs opencv4`
+COMMON+= `pkg-config --cflags opencv4`
 endif
 
 ifeq ($(OPENMP), 1)
@@ -160,9 +150,6 @@ $(OBJDIR)%.o: %.cpp $(DEPS)
 
 $(OBJDIR)%.o: %.cu $(DEPS)
 	$(NVCC) $(ARCH) $(COMMON) --compiler-options "$(CFLAGS)" -c $< -o $@
-
-obj/image_opencv.o: src/image_opencv.cpp
-	$(CXX) $(CFLAGS) -c $< -o $@
 
 obj:
 	mkdir -p obj
