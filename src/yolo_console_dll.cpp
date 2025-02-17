@@ -111,7 +111,13 @@ cv::Mat slMat2cvMat(sl::Mat &input) {
         ) {
         cv_type = CV_32FC4;
     } else cv_type = CV_8UC4; // sl::Mat used are either RGBA images or XYZ (4C) point clouds
-    return cv::Mat(input.getHeight(), input.getWidth(), cv_type, input.getPtr<sl::uchar1>(sl::MEM::CPU));
+    return cv::Mat(input.getHeight(), input.getWidth(), cv_type, input.getPtr<sl::uchar1>(
+#ifdef ZED_STEREO_2_COMPAT_MODE
+        sl::MEM::MEM_CPU
+#else
+        sl::MEM::CPU
+#endif
+        ));
 }
 
 cv::Mat zed_capture_rgb(sl::Camera &zed) {
@@ -124,7 +130,7 @@ cv::Mat zed_capture_rgb(sl::Camera &zed) {
 
 cv::Mat zed_capture_3d(sl::Camera &zed) {
     sl::Mat cur_cloud;
-    zed.retrieveMeasure(cur_cloud, 
+    zed.retrieveMeasure(cur_cloud,
 #ifdef ZED_STEREO_2_COMPAT_MODE
         sl::MEASURE_XYZ
 #else
@@ -151,11 +157,13 @@ std::vector<bbox_t> get_3d_coordinates(std::vector<bbox_t> bbox_vect, cv::Mat xy
 #ifndef USE_CMAKE_LIBS
 #pragma comment(lib, "opencv_world" OPENCV_VERSION ".lib")
 #ifdef TRACK_OPTFLOW
+/*
 #pragma comment(lib, "opencv_cudaoptflow" OPENCV_VERSION ".lib")
 #pragma comment(lib, "opencv_cudaimgproc" OPENCV_VERSION ".lib")
 #pragma comment(lib, "opencv_core" OPENCV_VERSION ".lib")
 #pragma comment(lib, "opencv_imgproc" OPENCV_VERSION ".lib")
 #pragma comment(lib, "opencv_highgui" OPENCV_VERSION ".lib")
+*/
 #endif    // TRACK_OPTFLOW
 #endif    // USE_CMAKE_LIBS
 #else     // OpenCV 2.x
@@ -342,13 +350,11 @@ int main(int argc, char *argv[])
     #endif
                 //init_params.sdk_cuda_ctx = (CUcontext)detector.get_cuda_context();
                 init_params.sdk_gpu_id = detector.cur_gpu_id;
-                
+
                 if (filename == "zed_camera" || file_ext == "svo") {
                     std::cout << "ZED 3D Camera " << zed.open(init_params) << std::endl;
                     if (!zed.isOpened()) {
-                        std::cout << " Error: ZED Camera should be connected to USB 3.0. And ZED_SDK should be installed. \n";
-                        getchar();
-                        return 0;
+                        error("Error: ZED Camera should be connected to USB 3.0. And ZED_SDK should be installed", DARKNET_LOC);
                     }
                     cur_frame = zed_capture_rgb(zed);
                     use_zed_camera = true;
@@ -390,7 +396,7 @@ int main(int argc, char *argv[])
                     bool exit_flag;
                     cv::Mat zed_cloud;
                     std::queue<cv::Mat> track_optflow_queue;
-                    detection_data_t() : exit_flag(false), new_detection(false) {}
+                    detection_data_t() : new_detection(false), exit_flag(false) {}
                 };
 
                 const bool sync = detection_sync; // sync data exchange
@@ -411,7 +417,7 @@ int main(int argc, char *argv[])
                         if (use_zed_camera) {
                             while (zed.grab() !=
         #ifdef ZED_STEREO_2_COMPAT_MODE
-                                sl::SUCCESS 
+                                sl::SUCCESS
         #else
                                 sl::ERROR_CODE::SUCCESS
         #endif
@@ -683,8 +689,12 @@ int main(int argc, char *argv[])
             show_console_result(result_vec, obj_names);
 #endif  // OPENCV
         }
-        catch (std::exception &e) { std::cerr << "exception: " << e.what() << "\n"; getchar(); }
-        catch (...) { std::cerr << "unknown exception \n"; getchar(); }
+        catch (std::exception &e) {
+            std::cerr << "exception: " << e.what() << "\n";
+        }
+        catch (...) {
+            std::cerr << "unknown exception \n";
+        }
         filename.clear();
     }
 

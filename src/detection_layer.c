@@ -211,7 +211,7 @@ void forward_detection_layer(const detection_layer l, network_state state)
         *(l.cost) = pow(mag_array(l.delta, l.outputs * l.batch), 2);
 
 
-        //printf("Detection Avg IOU: %f, Pos Cat: %f, All Cat: %f, Pos Obj: %f, Any Obj: %f, count: %d\n", avg_iou/count, avg_cat/count, avg_allcat/(count*l.classes), avg_obj/count, avg_anyobj/(l.batch*locations*l.n), count);
+        printf("Detection Avg IOU: %f, Pos Cat: %f, All Cat: %f, Pos Obj: %f, Any Obj: %f, count: %d\n", avg_iou/count, avg_cat/count, avg_allcat/(count*l.classes), avg_obj/count, avg_anyobj/(l.batch*locations*l.n), count);
         //if(l.reorg) reorg(l.delta, l.w*l.h, size*l.n, l.batch, 0);
     }
 }
@@ -287,29 +287,29 @@ void backward_detection_layer_gpu(detection_layer l, network_state state)
 
 void get_detection_detections(layer l, int w, int h, float thresh, detection *dets)
 {
-	int i, j, n;
-	float *predictions = l.output;
-	//int per_cell = 5*num+classes;
-	for (i = 0; i < l.side*l.side; ++i) {
-		int row = i / l.side;
-		int col = i % l.side;
-		for (n = 0; n < l.n; ++n) {
-			int index = i*l.n + n;
-			int p_index = l.side*l.side*l.classes + i*l.n + n;
-			float scale = predictions[p_index];
-			int box_index = l.side*l.side*(l.classes + l.n) + (i*l.n + n) * 4;
-			box b;
-			b.x = (predictions[box_index + 0] + col) / l.side * w;
-			b.y = (predictions[box_index + 1] + row) / l.side * h;
-			b.w = pow(predictions[box_index + 2], (l.sqrt ? 2 : 1)) * w;
-			b.h = pow(predictions[box_index + 3], (l.sqrt ? 2 : 1)) * h;
-			dets[index].bbox = b;
-			dets[index].objectness = scale;
-			for (j = 0; j < l.classes; ++j) {
-				int class_index = i*l.classes;
-				float prob = scale*predictions[class_index + j];
-				dets[index].prob[j] = (prob > thresh) ? prob : 0;
-			}
-		}
-	}
+    int i, j, n;
+    float *predictions = l.output;
+    //int per_cell = 5*num+classes;
+    for (i = 0; i < l.side*l.side; ++i) {
+        int row = i / l.side;
+        int col = i % l.side;
+        for (n = 0; n < l.n; ++n) {
+            int index = i*l.n + n;
+            int p_index = l.side*l.side*l.classes + i*l.n + n;
+            float scale = predictions[p_index];
+            int box_index = l.side*l.side*(l.classes + l.n) + (i*l.n + n) * 4;
+            box b;
+            b.x = (predictions[box_index + 0] + col) / l.side * w;
+            b.y = (predictions[box_index + 1] + row) / l.side * h;
+            b.w = pow(predictions[box_index + 2], (l.sqrt ? 2 : 1)) * w;
+            b.h = pow(predictions[box_index + 3], (l.sqrt ? 2 : 1)) * h;
+            dets[index].bbox = b;
+            dets[index].objectness = scale;
+            for (j = 0; j < l.classes; ++j) {
+                int class_index = i*l.classes;
+                float prob = scale*predictions[class_index + j];
+                dets[index].prob[j] = (prob > thresh) ? prob : 0;
+            }
+        }
+    }
 }
